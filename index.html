@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language, Cognition and Communication Across the Lifespan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=Allura&display=swap" rel="stylesheet">
+
+<script>
+  // Apply saved / system theme before paint to avoid a flash
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('theme'); } catch (e) {}
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+
+<style>
+  /* =====================================================================
+     DESIGN TOKENS
+     One border weight (1px), one corner radius (4px), one type scale.
+     ===================================================================== */
+  :root {
+    /* colour */
+    --bg: #f6f8f9;
+    --surface: #ffffff;
+    --surface-2: #eef3f5;
+    --text: #16222a;
+    --muted: #586a72;
+    --line: #d5dfe4;
+    --glow-1: rgba(14, 106, 126, .13);
+    --glow-2: rgba(14, 106, 126, .08);
+    --accent: #0e6a7e;
+    --accent-strong: #0a5263;
+    --accent-soft: #e0eef2;
+    --on-accent: #ffffff;
+    --backdrop: rgba(6, 16, 20, .65);
+    --shadow-sm: 0 1px 2px rgba(16, 34, 42, .05), 0 6px 20px rgba(16, 34, 42, .07);
+    --shadow-lg: 0 24px 64px rgba(6, 16, 20, .28);
+
+    /* shape */
+    --radius: 0;
+    --border: 1px solid var(--line);
+
+    /* type families */
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+    /* type scale — the ONLY sizes used on the page */
+    --fs-xs: 12px;   /* mono caps: eyebrows, buttons, nav, links */
+    --fs-sm: 14px;   /* times, affiliations, small notes, footer */
+    --fs-md: 16px;   /* body text */
+    --fs-lg: 18px;   /* reading text: lead, talk titles, names, abstract, card values */
+    --fs-xl: 22px;   /* h3 */
+    --fs-2xl: 36px;  /* h2 */
+    --fs-3xl: 56px;  /* h1 */
+
+    /* layout */
+    --max: 1120px;
+    --side: 220px;     /* left label column */
+    --gutter: 40px;
+    --section-y: 96px;
+  }
+  [data-theme="dark"] {
+    --bg: #0b1317;
+    --surface: #111c21;
+    --surface-2: #16252b;
+    --text: #e3ebee;
+    --muted: #91a4ab;
+    --line: #22353d;
+    --glow-1: rgba(90, 180, 200, .12);
+    --glow-2: rgba(90, 180, 200, .07);
+    --accent: #5ab4c8;
+    --accent-strong: #8ccfdf;
+    --accent-soft: #14303a;
+    --on-accent: #071c22;
+    --backdrop: rgba(0, 0, 0, .65);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    --shadow-lg: 0 24px 64px rgba(0,0,0,.5);
+  }
+
+  /* =====================================================================
+     BASE
+     ===================================================================== */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: var(--fs-md);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color .3s, color .3s;
+  }
+  /* Soft glow background, fixed to the window: content scrolls over it.
+     CSS only — no images, no JS. Only `transform` is animated, which the
+     browser hands to the GPU, so it adds nothing to load time. */
+  .glow { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .glow::before, .glow::after {
+    content: ""; position: absolute;
+    border-radius: 50%; will-change: transform;
+  }
+  .glow::before {
+    width: 900px; height: 900px; top: -360px; right: -260px;
+    background: radial-gradient(closest-side, var(--glow-1), transparent);
+    animation: drift-a 26s ease-in-out infinite alternate;
+  }
+  .glow::after {
+    width: 760px; height: 760px; bottom: -420px; left: -220px;
+    background: radial-gradient(closest-side, var(--glow-2), transparent);
+    animation: drift-b 32s ease-in-out infinite alternate;
+  }
+  @keyframes drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(-180px, 120px) scale(1.12); } }
+  @keyframes drift-b { from { transform: translate(0, 0) scale(1); } to { transform: translate(220px, -90px) scale(1.08); } }
+
+  a { color: var(--accent); }
+  img { max-width: 100%; display: block; }
+  p { margin: 0; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 28px; }
+
+  /* =====================================================================
+     TYPE ROLES — every text element uses one of these
+     ===================================================================== */
+  /* Display */
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; }
+  h1 { font-size: clamp(36px, 4.6vw, var(--fs-3xl)); line-height: 1.25; letter-spacing: -.02em; }
+  h2 { font-size: clamp(28px, 3.2vw, var(--fs-2xl)); line-height: 1.2; letter-spacing: -.01em; font-style: italic; font-weight: 400; color: var(--accent); }
+  h3 { font-size: var(--fs-xl); line-height: 1.3; }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+
+  /* Lead: serif reading text */
+  .lead { font-family: var(--serif); font-size: var(--fs-lg); line-height: 1.7; }
+  .lead + .lead { margin-top: 1em; }
+
+  /* Body: sans supporting text */
+  .body { font-size: var(--fs-md); line-height: 1.65; color: var(--muted); }
+
+  /* Eyebrow: small caps labels (section labels = accent, field labels = muted) */
+  .eyebrow {
+    font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+    line-height: 1.5;
+  }
+  .eyebrow.muted { color: var(--muted); }
+
+  /* Meta: times, schedule rows, small facts */
+  .meta { font-family: var(--mono); font-size: var(--fs-sm); letter-spacing: 0; color: var(--muted); }
+
+  /* Action: buttons, nav, text links */
+  .action {
+    font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+
+  /* =====================================================================
+     COMPONENTS
+     ===================================================================== */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 48px; padding: 0 24px;
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    text-decoration: none; cursor: pointer;
+    transition: background-color .2s, color .2s, border-color .2s;
+  }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .btn-ghost { background: transparent; color: var(--accent); }
+  .btn-ghost:hover { background: var(--accent-soft); }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .text-link {
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: var(--accent); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .text-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  .icon-btn {
+    width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center;
+    background: transparent; border: var(--border); border-radius: var(--radius);
+    color: var(--text); cursor: pointer; font-size: var(--fs-xl); line-height: 1;
+    transition: border-color .2s, color .2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  .card { background: var(--surface); border: var(--border); border-radius: var(--radius); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* =====================================================================
+     HEADER
+     ===================================================================== */
+  header.site {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: var(--border);
+  }
+  header.site .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 64px; }
+  .brand { min-width: 0; color: var(--muted); text-decoration: none; white-space: nowrap; }
+  .brand:hover { color: var(--accent); }
+  nav.links { flex-shrink: 0; display: flex; align-items: center; gap: 28px; }
+  nav.links a { color: var(--muted); text-decoration: none; }
+  nav.links a:hover { color: var(--accent); }
+  .icon-sun { display: none; }
+  [data-theme="dark"] .icon-sun { display: block; }
+  [data-theme="dark"] .icon-moon { display: none; }
+
+  /* =====================================================================
+     HERO
+     ===================================================================== */
+  .hero { position: relative; }
+  .hero .wrap { padding-top: var(--section-y); padding-bottom: calc(var(--section-y) * .7); }
+  .hero-inner { max-width: 880px; }
+  #seriesLabel { margin-bottom: 24px; }
+  .hero h1 { margin-bottom: 24px; }
+  /* Second title line in a light handwritten script */
+  .hero h1 em { display: block; font-family: "Allura", cursive; font-style: normal; font-weight: 400; font-size: 1.65em; line-height: 1.05; letter-spacing: 0; }
+  #metaRegistrationDeadline { display: block; font-size: var(--fs-sm); color: var(--muted); }
+  #admissionItem[hidden], #metaRegistrationDeadline[hidden] { display: none; }
+  .hero .lead { color: var(--muted); max-width: 32em; margin-bottom: 28px; }
+
+  /* Event facts: one line between title and buttons */
+  .facts-line {
+    display: flex; flex-wrap: wrap; gap: 12px 32px;
+    margin: 0 0 32px; padding: 16px 0; list-style: none;
+    border-top: var(--border); border-bottom: var(--border);
+  }
+  .facts-line li { display: flex; align-items: center; gap: 10px; font-size: var(--fs-md); }
+  .venue-link { color: var(--accent-strong); text-underline-offset: .18em; }
+  .ico { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent); }
+  .muted { color: var(--muted); }
+
+  /* =====================================================================
+     SECTIONS — single column, same max width as the hero
+     ===================================================================== */
+  section.block { padding: calc(var(--section-y) * .7) 0; scroll-margin-top: 64px; }
+  .section-body { max-width: 880px; }
+  .section-body > h2 { margin-bottom: 20px; }
+  .section-body > .body { max-width: 40em; }
+
+  /* About */
+  .about-essay { max-width: 72ch; }
+  .about-essay p { margin: 0; }
+  .about-essay p + p { margin-top: 1em; }
+
+  /* Program — one table-like agenda; every row shares the same time | content columns */
+  .agenda { list-style: none; margin: 0; padding: 0; overflow: hidden; }
+  .row { display: grid; grid-template-columns: 148px 1fr; gap: 24px; padding: 20px 28px; border-top: var(--border); }
+  .row:first-child { border-top: none; }
+  .row-time { font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--muted); padding-top: 2px; white-space: nowrap; }
+  /* Shared markers for opening, sessions, tea break, and closing. */
+  .row-session { padding-block: 14px; align-items: baseline; background: var(--surface-2); }
+  .row-session .row-time { color: var(--accent); }
+  .agenda .eyebrow, .agenda .action { font-family: var(--sans); }
+  .row-session .eyebrow { color: var(--accent); }
+
+  /* talk rows */
+  .talk { display: grid; grid-template-columns: 88px 1fr; gap: 24px; align-items: start; }
+  .photo {
+    width: 88px; height: 88px; flex-shrink: 0; border-radius: 50%;
+    object-fit: cover; background: var(--accent-soft); border: var(--border);
+  }
+  .photo-fallback { display: grid; place-items: center; font-family: var(--serif); font-size: var(--fs-xl); color: var(--accent); }
+  .talk-title { font-family: var(--serif); font-size: var(--fs-lg); font-weight: 600; line-height: 1.45; }
+  .speaker { margin-top: 6px; font-size: var(--fs-md); }
+  .speaker-name { font-weight: 500; color: var(--text); }
+  .speaker-aff { display: block; white-space: pre-line; font-size: var(--fs-sm); color: var(--muted); }
+  .talk .text-link { margin-top: 12px; }
+  .row-talk:hover { background: color-mix(in srgb, var(--accent-soft) 40%, transparent); }
+
+  /* Registration */
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-top: 20px; }
+  .facts b { color: var(--text); font-weight: 500; }
+  .section-body .btn-row { margin-top: 32px; }
+
+  /* Footer */
+  footer { padding: 40px 0 48px; border-top: var(--border); margin-top: calc(var(--section-y) * .3); }
+  #footerOrg { white-space: pre-line; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: var(--fs-sm); color: var(--muted); }
+
+  /* =====================================================================
+     DIALOGS (abstract + poster share one shell)
+     ===================================================================== */
+  dialog.sheet {
+    padding: 0; border: var(--border); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+    max-width: calc(100vw - 32px); max-height: calc(100vh - 32px);
+    box-shadow: var(--shadow-lg);
+  }
+  dialog.sheet::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
+  dialog[open] { animation: rise .25s ease-out; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .sheet-head {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 24px; background: var(--surface-2); border-bottom: var(--border);
+  }
+  .sheet-head .grow { flex: 1; min-width: 0; }
+  .sheet-body { padding: 28px 32px 32px; }
+
+  #outlineModal { width: min(680px, calc(100vw - 32px)); }
+  #outlineModal .sheet-head {
+    padding: 28px 32px 0;
+    background: var(--surface);
+    border-bottom: 0;
+    gap: 14px;
+  }
+  #outlineModal #modalPhoto { flex: none; }
+  #outlineModal .photo {
+    width: 62px; height: 62px;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  #modalClose { align-self: flex-start; }
+  #outlineModal .sheet-body { padding-top: 20px; }
+  #modalTime { border-top: var(--border); padding-top: 14px; }
+  #outlineModal .speaker-name { font-family: var(--serif); font-size: var(--fs-lg); font-weight: 600; }
+  #outlineModal .speaker-aff { display: block; margin-top: 2px; }
+  #outlineModal h3 { font-size: var(--fs-xl); font-weight: 600; line-height: 1.4; margin: 8px 0 24px; color: var(--accent-strong); }
+  .abstract {
+    font-family: var(--serif); font-size: var(--fs-lg); line-height: 1.75;
+    text-align: left; hyphens: none; color: #3b4248;
+  }
+  [data-theme="dark"] .abstract { color: var(--text); }
+  .abstract p { margin: 0; }
+  .abstract p + p { margin-top: .8em; }
+  .sheet-section { margin-top: 28px; padding-top: 24px; border-top: var(--border); }
+  .sheet-section .eyebrow { margin-bottom: 10px; }
+  .references { list-style: none; margin: 0; padding: 0; font-size: var(--fs-sm); }
+  .references li + li { margin-top: .75em; }
+  .references a { color: var(--accent-strong); overflow-wrap: anywhere; }
+
+  #posterModal { width: fit-content; overflow: hidden; }
+  #posterModal .sheet-head { padding: 12px 12px 12px 24px; }
+  .poster-view { padding: 16px; background: var(--surface-2); }
+  .poster-view img { height: auto; width: auto; max-height: calc(100vh - 130px); max-width: 100%; margin: 0 auto; }
+  .poster-empty {
+    width: min(420px, calc(100vw - 64px)); aspect-ratio: 1 / 1.414; max-height: calc(100vh - 140px);
+    display: grid; place-items: center; text-align: center; line-height: 2;
+    border: 1px dashed var(--line); border-radius: var(--radius);
+  }
+
+  /* Floating poster button */
+  .poster-fab {
+    position: fixed; right: 24px; bottom: 24px; z-index: 60;
+    box-shadow: var(--shadow-sm);
+  }
+  .poster-fab svg { width: 18px; height: 18px; }
+
+  /* =====================================================================
+     RESPONSIVE
+     ===================================================================== */
+  @media (min-width: 1000px) {
+    .hero .wrap { padding-top: 76px; padding-bottom: 48px; }
+    .hero h1 { font-size: clamp(42px, 4.2vw, 54px); line-height: 1.16; }
+    .hero-title-main { display: block; text-wrap: balance; }
+    .hero h1 em { font-size: 1.3em; margin-top: 8px; }
+    #about { padding-top: 38px; }
+  }
+  @media (max-width: 920px) {
+    :root { --section-y: 72px; }
+  }
+  @media (max-width: 640px) {
+    header.site .wrap { padding-inline: 16px; gap: 12px; }
+    nav.links { gap: 12px; }
+    nav.links a { padding-block: 10px; }
+    nav.links a[href="#about"] { display: none; }
+    .btn-row { flex-direction: column; }
+    .hero h1 em { font-size: min(1.5em, 12vw); }
+    .facts-line { flex-direction: column; gap: 10px; }
+    .facts-line li { align-items: flex-start; }
+    .facts-line .ico { margin-top: 4px; }
+    .btn-row .btn { width: 100%; }
+    .row { grid-template-columns: 1fr; gap: 6px; padding: 18px 20px; }
+    .row-session { padding-block: 14px; }
+    .talk {
+      grid-template-columns: 48px minmax(0, 1fr);
+      grid-template-areas: "photo speaker" "title title" "abstract abstract";
+      column-gap: 12px;
+      row-gap: 8px;
+    }
+    .talk-details { display: contents; }
+    .talk .photo { grid-area: photo; width: 48px; height: 48px; font-size: var(--fs-lg); }
+    .talk .speaker { grid-area: speaker; margin-top: 0; align-self: center; }
+    .talk .talk-title { grid-area: title; }
+    .talk .text-link { grid-area: abstract; justify-self: start; margin-top: 0; }
+    .sheet-body { padding: 24px 22px 28px; }
+    .sheet-head { padding: 16px 22px; }
+    #outlineModal .sheet-head { padding: 24px 22px 0; gap: 10px; }
+    #outlineModal .photo { width: 44px; height: 44px; }
+    .poster-fab { right: 16px; bottom: 16px; width: 48px; padding: 0; }
+    .poster-fab span { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="glow" aria-hidden="true"></div>
+
+<script>
+/* =====================================================================
+   EVENT CONFIG — edit everything here. No need to touch the HTML below.
+   ===================================================================== */
+const EVENT = {
+  seriesLabel: "NCCU × NTU Linguistics · Joint Invited Talks",
+  titleMain:   "Language, Cognition and Communication",
+  titleItalic: "Across the Lifespan",
+  brandName:   "LCC Talks",            // short name in the top bar
+  subtitle:    "Four invited talks on how we speak and understand words, and how the brain processes information across the lifespan.",
+  date:  "Friday, 4 December 2026",
+  time:  "09:00 – 12:40",
+  venue: "Humanities Hall, National Taiwan University（臺大人文館）",
+  venueMapUrl: "https://maps.app.goo.gl/K4P55StVK1y8o497A",
+  admission: "Free admission",          // 4th item in the date/time/venue line
+  admissionNote: "Registration required",
+  talkFormat: "30-min talk + 15-min Q&A",
+
+  organizer:   "Phonetics and Psycholinguistics Lab, Graduate Institute of Linguistics, National Chengchi University",
+  coOrganizers: [
+    "Ministry of Education",
+    "University Academic Alliance in Taiwan (UAAT)",
+    "Graduate Institute of Linguistics, National Taiwan University"
+  ],
+  contactEmail: "",   // e.g. "contact@example.edu" — leave empty to hide the contact button
+
+  // Poster: opened from the floating button at bottom-right (JPG/PNG, A4 portrait works best) + optional PDF download
+  poster: "assets/lcc-talks-poster.png",
+  posterPdf: "",     // e.g. "files/poster.pdf"
+  hidePosterButton: false,   // set true to hide the floating poster button
+
+  // Google Form link
+  registrationUrl: "https://forms.gle/gzyebztYTJkg1fFD6",
+  registrationDeadline: "27 November 2026 at 23:59 (Taipei time)",
+  capacity: "",               // e.g. "60 seats"
+  fee: "",                    // e.g. "Free"
+
+  about: [
+    "This half-day event brings together four studies of how language and cognition vary with age and across communicative contexts. The talks cover speech production, word comprehension, and how people process information about themselves.",
+    "Two talks take up questions of development and aging. One examines the neural correlates of self-related processing across adolescence as participants evaluate themselves in social and academic contexts. The other compares how younger and older adults use context to resolve word ambiguity.",
+    "The other two talks examine when and where speech becomes less fluent. One compares storytelling and conversation in Mandarin-speaking children, including children with language impairment. The other uses corpus measures to study disfluency in typical Czech speech and in speech produced by people with aphasia.",
+    "Researchers and educators interested in these topics are invited to register. Talks are expected to be primarily in English, with flexibility to use Mandarin Chinese during discussion."
+  ],
+
+  // Non-talk items in the program
+  opening: {
+    time: "09:00 – 09:10",
+    title: "Open remarks",
+    speaker: "Chair I-Ping Wan",
+    affiliation: "Graduate Institute of Linguistics, National Chengchi University"
+  },
+  break:   { time: "10:40 – 11:10", text: "Tea break & networking" },
+  closing: { time: "12:40",         text: "Closing and take-away lunch pickup" },
+
+  // Time slots, in order. Speakers below are placed into these slots in the order they are listed.
+  slots: ["09:10 – 09:55", "09:55 – 10:40", "11:10 – 11:55", "11:55 – 12:40"],
+
+  sessions: [
+    { title: "", time: "09:10 – 10:40", chair: "", count: 2 },   // title e.g. "Development"; chair e.g. "Chair: Prof. Name"
+    { title: "", time: "11:10 – 12:40", chair: "", count: 2 }
+  ],
+
+  // Confirmed speaking order.
+  speakers: [
+    {
+      name: "Professor Michal Láznička",
+      affiliation: "University of Birmingham, UK\nDepartment of Linguistics, Charles University",
+      photo: "assets/speaker-01.jpg",
+      title: "Explaining fluency with corpus statistics: Insights from Czech aphasia and typical speech",
+      abstract: "Apart from their pragmatic functions, disfluencies (primarily silent and filled pauses) are indices of cognitive effort that can be tied to lexical and constructional retrieval, grammatical processing, and sentence and discourse planning (Beliao & Lacheret, 2013; Rapoeye et al., 2023; Sadri Mirdamadi & De Jong, 2015). Predictability has been connected to lower processing demands and more fluent production (Beattie & Butterworth, 1979; Goldman-Eisler, 1958; Kapatsinski, 2010; Schneider, 2016).\nIn this talk, I will present an analysis that integrates the corpus measures of frequency, dispersion, and association to explain the distribution of disfluencies in the production of Czech prepositional phrases (PPs). The analysis is based on a small corpus of connected speech produced by Czech speakers with aphasia (487 PP tokens) and a much larger corpus of typical spoken Czech (122,137 PP tokens). The results show that PPs that are more frequent and appear in a larger variety of contexts are indeed more fluent. Furthermore, strong association between the preposition and the complement forms a “protective layer” against disfluencies within the PPs. The results also suggest that the differences between the two groups are quantitative rather than qualitative in nature.",
+      references: [
+        {"citation": "Beattie, G. W., & Butterworth, B. L. (1979). Contextual Probability and Word Frequency as Determinants of Pauses and Errors in Spontaneous Speech. Language and Speech, 22(3), 201–211.", "url": "https://doi.org/10.1177/002383097902200301"},
+        {"citation": "Beliao, J., & Lacheret, A. (2013). Disfluency and discursive markers: When prosody and syntax plan discourse. 5–8.", "url": "https://www.isca-archive.org/diss_2013/beliao13_diss.html#"},
+        {"citation": "Goldman-Eisler, F. (1958). The Predictability of Words in Context and the Length of Pauses in Speech. Language and Speech, 1(3), 226–231.", "url": "https://doi.org/10.1177/002383095800100308"},
+        {"citation": "Kapatsinski, V. (2010). Frequency of Use Leads to Automaticity of Production: Evidence from Repair in Conversation. Language and Speech, 53(1), 71–105.", "url": "https://doi.org/10.1177/0023830909351220"},
+        {"citation": "Rapoeye, K., Hartsuiker, R. J., & Pistono, A. (2023). Semantic interference affects speech production by increasing disfluencies, not errors. Royal Society Open Science, 10(6), 230006.", "url": "https://doi.org/10.1098/rsos.230006"},
+        {"citation": "Sadri Mirdamadi, F., & De Jong, N. H. (2015). The effect of syntactic complexity on fluency: Comparing actives and passives in L1 and L2 speech. Second Language Research, 31(1), 105–116.", "url": "https://doi.org/10.1177/0267658314554498"},
+        {"citation": "Schneider, U. (2016). Hesitation placement as evidence for chunking: A corpus-based study of spoken English. In H. Behrens & S. Pfänder, Experience Counts: Frequency Effects in Language (pp. 61–90). De Gruyter.", "url": "https://doi.org/10.1515/9783110346916-004"}
+      ]
+    },
+    {
+      name: "Dr. Po-Heng Chen",
+      affiliation: "Graduate Institute of Linguistics, National Taiwan University",
+      photo: "assets/speaker-02.jpeg",
+      title: "When a Word Has Two Meanings: Can Older Brains Process the Less Common One?",
+      abstract: "Resolving lexical ambiguity is essential for communication and relies heavily on context. How does the brain process an ambiguous word when context endorses the less common meaning with little semantic support and the common meaning competes, and does healthy aging change this? Two experiments recorded native Taiwan Mandarin speakers’ electrical brain responses to unambiguous or ambiguous words preceded by a semantically non-predictive one-word context that syntactically fit only the word’s more common or less common meaning. In Experiment 1, 32 younger adults (mean age 23.6, range 20–30) showed an enhanced post-N400 anterior positivity (AP), a brain response linked to revising disconfirmed predictions, when the context pointed to the less common meaning, relative to the other two conditions. This suggests that the AP can reflect reprioritizing a less common meaning under competition from the more common one, even without a strongly predictive context. In Experiment 2, 40 healthy older adults (mean age 69.5, range 60–83) showed the same pattern, despite lower accuracy than younger adults on a semantic relatedness judgment task. Together, these findings align with cognitive resilience in language comprehension, suggesting that the AP may index reprioritizing weaker meanings, a process that appears relatively preserved in healthy aging. They further indicate that the AP can be elicited by long-term form–meaning associations, beyond the disconfirmation of context-driven predictions."
+    },
+    {
+      name: "Professor I-Ting Chiu",
+      affiliation: "Department of Speech-Language Pathology and Audiology, National Taipei University of Nursing and Health Sciences",
+      photo: "assets/speaker-03.png",
+      title: "Spoken Fluency and Discourse Processing Demands in Mandarin-Speaking Children: Microstructural Profiles Across Language Impairment and Clinical Subtypes",
+      abstract: "Mazes (silent/filled pauses, repetitions, and revisions) serve as sensitive behavioral indices of real-time cognitive effort during speech formulation. Using language sample analysis, this study employs a two-tier framework to examine spoken microstructural profiles—specifically mean length of utterance (MLU), lexical diversity (VOC), and maze percentage—across narrative generation and semi-structured conversation in school-age Mandarin-speaking children. In Tier 1, we compared typically developing controls (TD) and children with language impairment (LI). Preliminary trends indicate that narrative discourse, requiring sustained continuous formulation, systematically increases processing demands and prompts elevated maze rates across groups compared to interactive conversation. Children with LI demonstrated observable vulnerabilities in maintaining fluency during longer utterances, exhibiting parallel trade-off patterns that align with a quantitative rather than qualitative account of processing constraints. In Tier 2, we exploratorily examined clinical subtypes within the LI cohort (language impairment only vs. comorbid reading difficulties) to observe how reading profiles modulate spoken output across discourse genres. These findings underscore the ecological value of microstructural analysis in capturing real-time formulation dynamics and characterizing comorbid language and literacy profiles."
+    },
+    {
+      name: "Professor Pei-Wen Yeh",
+      affiliation: "Department of Psychology, Kaohsiung Medical University",
+      photo: "assets/speaker-04.webp",
+      title: "The neural correlates of self-related processing across adolescence",
+      abstract: "Self-concept encompasses individuals’ self-evaluations, beliefs and perceptions about themselves. A positive self-concept contributes to psychological well-being, and is particularly crucial during adolescence, a critical period for self-concept development. In this talk, I will present a series of studies investigating self-related processing in typically developing children, adolescents and adults. Event-related potentials (ERPs) were recorded with their performance in the self-referential encoding task (SRET), in which participants evaluated positive and negative personality traits in terms of how well they described themselves and others in both social and academic domains. The findings revealed distinct patterns of self-referential processing across the social and academic domains throughout adolescence. Children and adolescents showed positive evaluations toward both themselves and others. However, the self-positive bias appears to be attenuated in the academic domain, suggesting that self-evaluation may vary depending on the domain. Furthermore, these findings provide evidence that self-related processing is associated with mental health. Together, this series of studies highlights the developmental changes in domain-specific self-referential processing and their implications for psychological well-being."
+    }
+  ]
+};
+</script>
+
+<header class="site">
+  <div class="wrap">
+    <a href="#top" class="brand action" id="brand"></a>
+    <nav class="links" aria-label="Main">
+      <a class="action" href="#about">About</a>
+      <a class="action" href="#program">Program</a>
+      <a class="action" href="#register">Register</a>
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+      <symbol id="i-ticket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3.5 7.5h17v3a1.5 1.5 0 0 0 0 3v3h-17v-3a1.5 1.5 0 0 0 0-3z"/><path d="M14 7.5v9" stroke-dasharray="1.5 2"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+    </svg>
+    <div class="wrap">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow" id="seriesLabel"></div>
+          <h1 id="heroTitle"></h1>
+          <p class="lead" id="heroSubtitle"></p>
+        </div>
+        <div class="hero-details">
+          <ul class="facts-line">
+            <li><svg class="ico" aria-label="Date"><use href="#i-cal"/></svg><span id="metaDate"></span></li>
+            <li><svg class="ico" aria-label="Time"><use href="#i-clock"/></svg><span id="metaTime"></span></li>
+            <li><svg class="ico" aria-label="Venue"><use href="#i-pin"/></svg><a class="venue-link js-venue" target="_blank" rel="noopener"></a></li>
+            <li id="admissionItem"><svg class="ico" aria-label="Admission"><use href="#i-ticket"/></svg><span><span id="metaAdmission"></span><span id="metaRegistrationDeadline" hidden></span></span></li>
+          </ul>
+          <div class="btn-row">
+            <a class="btn btn-primary action js-register" href="#" target="_blank" rel="noopener">Register now →</a>
+            <a class="btn btn-ghost action" href="#program">View program</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="block" id="about">
+    <div class="wrap">
+      <div class="section-body">
+        <h2>About the event</h2>
+        <div class="about-essay" id="aboutBody"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRAM -->
+  <section class="block" id="program">
+    <div class="wrap">
+      <div>
+        <div class="section-body">
+          <h2>Program</h2>
+          <ol class="agenda card" id="agenda"></ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGISTER -->
+  <section class="block" id="register">
+    <div class="wrap">
+      <div class="section-body">
+        <h2>Registration</h2>
+        <p class="body">Please register through the online form. Registration helps us plan seating, refreshments and the take-away lunch provided at the close of the event.</p>
+        <div class="facts meta" id="regFacts"></div>
+        <div class="btn-row">
+          <a class="btn btn-primary action js-register" href="#" target="_blank" rel="noopener">Register now →</a>
+          <a class="btn btn-ghost action" id="contactBtn" href="#">Contact organizers</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div id="footerOrg"></div>
+    <div><span id="footerDate"></span> · <a class="venue-link js-venue" target="_blank" rel="noopener"></a></div>
+  </div>
+</footer>
+
+<!-- Floating poster button -->
+<button class="btn btn-primary action poster-fab" id="posterFab" aria-label="View event poster">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 7h8M8 10.5h8M8 14h5"/></svg>
+  <span>Poster</span>
+</button>
+
+<!-- Poster pop-up -->
+<dialog class="sheet" id="posterModal" aria-label="Event poster">
+  <div class="sheet-head">
+    <div class="eyebrow grow">Event poster</div>
+    <a class="text-link action" id="posterDownload" href="#" download>Download PDF ↓</a>
+    <button class="icon-btn" id="posterClose" aria-label="Close">×</button>
+  </div>
+  <div class="poster-view" id="posterView"></div>
+</dialog>
+
+<!-- Abstract pop-up -->
+<dialog class="sheet" id="outlineModal" aria-labelledby="modalTitle">
+  <div class="sheet-head">
+    <div id="modalPhoto"></div>
+    <div class="grow">
+      <div class="speaker-name" id="modalName"></div>
+      <div class="speaker-aff" id="modalAff"></div>
+    </div>
+    <button class="icon-btn" id="modalClose" aria-label="Close">×</button>
+  </div>
+  <div class="sheet-body">
+    <div class="meta" id="modalTime"></div>
+    <h3 id="modalTitle"></h3>
+    <div class="eyebrow" style="margin-bottom:10px">Abstract</div>
+    <div class="abstract" id="modalAbstract"></div>
+    <section class="sheet-section" id="modalReferences" aria-labelledby="referencesHeading" hidden>
+      <h4 class="eyebrow" id="referencesHeading">References</h4>
+      <ul class="references" id="referencesList"></ul>
+    </section>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const initials = (name) => name.split(/\s+/).filter(Boolean).slice(-2).map(w => w[0]).join("").toUpperCase();
+  const photoHTML = (t) => t.photo
+    ? `<img class="photo" src="${esc(t.photo)}" alt="Photo of ${esc(t.name)}">`
+    : `<div class="photo photo-fallback" aria-hidden="true">${esc(initials(t.name))}</div>`;
+  const withFormat = (time) => time + (EVENT.talkFormat ? ` · ${EVENT.talkFormat}` : "");
+
+  // ----- Header & hero -----
+  document.title = `${EVENT.titleMain} ${EVENT.titleItalic}`;
+  $("brand").textContent = EVENT.brandName;
+  $("seriesLabel").textContent = EVENT.seriesLabel;
+  $("heroTitle").innerHTML = `<span class="hero-title-main">${esc(EVENT.titleMain)}</span><em>${esc(EVENT.titleItalic)}</em>`;
+  $("heroSubtitle").textContent = EVENT.subtitle;
+  $("metaDate").textContent = EVENT.date;
+  $("metaTime").textContent = EVENT.time;
+  document.querySelectorAll(".js-venue").forEach(link => {
+    link.textContent = EVENT.venue;
+    link.href = EVENT.venueMapUrl;
+  });
+  const admission = [EVENT.admission, EVENT.admissionNote].filter(Boolean);
+  const registrationDeadline = EVENT.registrationDeadline ? `Register by ${EVENT.registrationDeadline}.` : "";
+  $("metaAdmission").textContent = admission.length ? admission.join(". ") + "." : "";
+  $("metaRegistrationDeadline").textContent = registrationDeadline;
+  $("metaRegistrationDeadline").hidden = !registrationDeadline;
+  $("admissionItem").hidden = !admission.length && !registrationDeadline;
+
+  // ----- About -----
+  $("aboutBody").innerHTML = EVENT.about.map(paragraph => `<p class="lead">${esc(paragraph)}</p>`).join("");
+
+  // ----- Registration & footer -----
+  const facts = [["Capacity", EVENT.capacity], ["Fee", EVENT.fee]].filter(f => f[1]);
+  $("regFacts").innerHTML = [
+    ...(registrationDeadline ? [`<span>${esc(registrationDeadline)}</span>`] : []),
+    ...facts.map(f => `<span>${f[0]}: <b>${esc(f[1])}</b></span>`)
+  ].join("");
+  if (!registrationDeadline && !facts.length) $("regFacts").style.display = "none";
+  if (EVENT.contactEmail) $("contactBtn").href = `mailto:${EVENT.contactEmail}`;
+  else $("contactBtn").style.display = "none";
+  document.querySelectorAll(".js-register").forEach(a => a.href = EVENT.registrationUrl);
+  $("footerOrg").textContent = [
+    `Organized by ${EVENT.organizer}`,
+    ...(EVENT.coOrganizers.length ? [`Co-organized by ${EVENT.coOrganizers.join(" · ")}`] : [])
+  ].join("\n");
+  $("footerDate").textContent = EVENT.date;
+
+  // ----- Program -----
+  const marker = (n) => n ? `<li class="row row-session"><div class="row-time">${esc(n.time)}</div><div class="eyebrow">${esc(n.text)}</div></li>` : "";
+  const roman = ["I", "II", "III", "IV"];
+  const talks = [];
+  const opening = EVENT.opening;
+  let html = opening ? `<li class="row row-session">
+    <div class="row-time">${esc(opening.time)}</div>
+    <div>
+      <div class="eyebrow">${esc(opening.title)}</div>
+      <div class="speaker">
+        <span class="speaker-name">${esc(opening.speaker)}</span>
+        <span class="speaker-aff">${esc(opening.affiliation)}</span>
+      </div>
+    </div>
+  </li>` : "";
+  let k = 0;
+  EVENT.sessions.forEach((s, si) => {
+    const extra = [s.title, s.chair].filter(Boolean).map(esc).join(" · ");
+    html += `<li class="row row-session">
+      <div class="row-time">${esc(s.time)}</div>
+      <div><span class="eyebrow">Session ${roman[si]}</span>${extra ? `<span class="body"> · ${extra}</span>` : ""}</div>
+    </li>`;
+    EVENT.speakers.slice(k, k + s.count).forEach(sp => {
+      const t = Object.assign({ time: EVENT.slots[k] || "" }, sp);
+      k++;
+      const idx = talks.push(t) - 1;
+      html += `<li class="row row-talk">
+        <div class="row-time">${esc(t.time)}</div>
+        <div class="talk">
+          ${photoHTML(t)}
+          <div class="talk-details">
+            <div class="talk-title">${esc(t.title)}</div>
+            <div class="speaker"><span class="speaker-name">${esc(t.name)}</span>${t.affiliation ? `<span class="speaker-aff">${esc(t.affiliation)}</span>` : ""}</div>
+            <button class="text-link action" data-talk="${idx}">Read abstract <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </li>`;
+    });
+    if (si === 0) html += marker(EVENT.break);
+  });
+  html += marker(EVENT.closing);
+  $("agenda").innerHTML = html;
+
+  // ----- Abstract pop-up -----
+  const modal = $("outlineModal");
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-talk]");
+    if (!btn) return;
+    const t = talks[+btn.dataset.talk];
+    $("modalPhoto").innerHTML = photoHTML(t);
+    $("modalName").textContent = t.name;
+    $("modalAff").textContent = t.affiliation;
+    $("modalTime").textContent = withFormat(t.time);
+    $("modalTitle").textContent = t.title;
+    const paragraphs = t.abstract.split(/\n+/).map((text) => {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = text;
+      return paragraph;
+    });
+    $("modalAbstract").replaceChildren(...paragraphs);
+    const references = t.references || [];
+    const items = references.map(({ citation, url }) => {
+      const item = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = url;
+      link.textContent = url;
+      item.append(citation + " ", link);
+      return item;
+    });
+    $("referencesList").replaceChildren(...items);
+    $("modalReferences").hidden = references.length === 0;
+    modal.showModal();
+  });
+  $("modalClose").addEventListener("click", () => modal.close());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
+
+  // ----- Poster pop-up -----
+  const pm = $("posterModal");
+  $("posterView").innerHTML = EVENT.poster
+    ? `<img src="${esc(EVENT.poster)}" alt="Event poster">`
+    : `<div class="poster-empty meta"><span>POSTER<br>A4 · 1 : 1.414<br><br>set EVENT.poster</span></div>`;
+  if (EVENT.posterPdf) $("posterDownload").href = EVENT.posterPdf;
+  else $("posterDownload").style.display = "none";
+  if (EVENT.hidePosterButton) $("posterFab").style.display = "none";
+  $("posterFab").addEventListener("click", () => pm.showModal());
+  $("posterClose").addEventListener("click", () => pm.close());
+  pm.addEventListener("click", (e) => { if (e.target === pm) pm.close(); });
+
+  // ----- Theme toggle -----
+  $("themeToggle").addEventListener("click", () => {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
